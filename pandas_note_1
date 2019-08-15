@@ -1,0 +1,67 @@
+import numpy as np
+import pandas as pd
+from datetime import datetime 
+
+#read_csv 讀取檔案
+ted = pd.read_csv("ted_main.csv",encoding = "utf-8")
+
+#單行操作:["行標籤"] >>>Series
+ted["comments"]
+
+#多行操作:[ ["標籤1","標籤2",...] ] >>> Dateframe
+#裡面[]:list；外面[]:行操作
+ted[["comments","description"]]
+
+#轉置表格，如果要存檔則改成ted.T.to_csv("新檔名",encoding="編碼")
+ted.T
+
+
+#方便列操作，從頭開始取到您要的列數。
+ted.head(5)
+#方便列操作，從尾開始取到您要的列數。
+ted.tail(5)
+
+#特定列操作 iloc.[一筆列資料索引,一筆行資料索引]  ###hint:橫列無阻
+ted.iloc[1,0]
+ted.comments[1]
+#上述兩種表示方法的結果一致!!!
+
+#特定列操作 iloc.[列起點:列終點,行起點:行終點]
+ted.iloc[1:3,0:2]
+ted.iloc[1:3][["comments","description"]]    
+#上述兩種表示方法的結果是一樣的!!!
+
+
+#step1 處理時間
+str(datetime.utcfromtimestamp(1140825600))
+#step2 轉換流程 >>> 遞給整行 >>> 走過每個流程
+def timetrans(s):
+    return str(datetime.utcfromtimestamp(s))
+#step3 apply:apply(流程名稱) 對每一個執行一次流程
+ted["film_date"].apply(timetrans) #timetrans()這裡不用加小括號，它到時會自己幫你把s一一帶入!!!
+#step4 新增新的行
+ted["newtime"] = ted["film_date"].apply(timetrans)
+ted["newtime"]
+
+#篩選操作原理:資料[[跟你資料一樣多的bool]]
+ted.head(3)[[True, False, True]]
+
+#篩選實際操作: 利用轉換流程 >>> 篩選大數據。
+def ffilter(comm):
+    if comm > 3000 and comm < 5000:
+        return True
+    else:
+        return False
+ted["comments"].apply(ffilter)   #結果為一個series，也就是list的意思
+ted[ted["comments"].apply(ffilter)]  #篩選完，只有兩列資料相符。
+
+#tags 裡面是[]括住的不是list，是有中括號的字串，故需要利用以下函式。
+#eval() >>> 把輸入的字串當成一個python程式在執行。
+def cfilter(ta):
+    tagli = eval(ta)
+    if "computers" in tagli:
+        return True
+    else:
+        return False
+ted["tags"].apply(cfilter)
+ted[ted["tags"].apply(cfilter)]
